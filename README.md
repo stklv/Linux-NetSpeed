@@ -11,8 +11,8 @@ wget -N "https://github.000060000.xyz/tcp.sh" && chmod +x tcp.sh && ./tcp.sh
 
 双持bbr+锐速
 bbr 添加
-echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
-echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
+echo "net.core.default_qdisc=fq" >> /etc/sysctl.d/99-sysctl.conf
+echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.d/99-sysctl.conf
 sysctl -p
 
 编辑锐速文件
@@ -51,6 +51,8 @@ bbsplus算法原作者
 https://blog.csdn.net/dog250/article/details/80629551
 bbrplus首用名 ？
 https://github.com/cx9208/bbrplus
+新版bbrplus
+https://github.com/UJX6N/bbrplus-5.10
 xanmod官网
 https://xanmod.org
 Zen官网
@@ -82,3 +84,4 @@ https://zh.wikipedia.org/zh/Ubuntu
 https://wiki.ubuntu.com/Releases
 https://wiki.debian.org/LTS
 https://wiki.centos.org/zh/About/Product
+

@@ -4,7 +4,7 @@ export PATH
 #=================================================
 #	System Required: CentOS 7/8,Debian/ubuntu,oraclelinux
 #	Description: BBR+BBRplus+Lotserver
-#	Version: 1.3.2.71
+#	Version: 1.3.2.75
 #	Author: 千影,cx9208,YLX
 #	更新内容及反馈:  https://blog.ylx.me/archives/783.html
 #=================================================
@@ -15,7 +15,7 @@ export PATH
 # SKYBLUE='\033[0;36m'
 # PLAIN='\033[0m'
 
-sh_ver="1.3.2.71"
+sh_ver="1.3.2.75"
 github="github.000060000.xyz"
 
 Green_font_prefix="\033[32m" && Red_font_prefix="\033[31m" && Green_background_prefix="\033[42;37m" && Red_background_prefix="\033[41;37m" && Font_color_suffix="\033[0m"
@@ -46,10 +46,10 @@ installbbr(){
 		
 		if [[ ${version} = "7" ]]; then
 			if [[ ${bit} = "x86_64" ]]; then
-				kernel_version="5.10.11"
+				kernel_version="5.11.4"
 				detele_kernel_head
-				wget -N -O kernel-headers-c7.rpm https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/EUAfSjMW2eNNg9cyHF29dOEBG1dM552CKxeQ513laHHDdA?download=1
-				wget -N -O kernel-c7.rpm https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/EeNKgWwDjqhIqGUmpgsLnXcBuUps_eKOsmtnysfYBlRDCg?download=1
+				wget -N -O kernel-headers-c7.rpm https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/Ee9Aix11R_hAji_ZjgoVQlEBcHN-HVo8Xmf-eTfePeuwyQ?download=1
+				wget -N -O kernel-c7.rpm https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/EfArJR7pT4xCkrfIszp__ggBBcs12hFyz6PdRevFAcDDzw?download=1
 				
 				yum install -y kernel-c7.rpm
 				yum install -y kernel-headers-c7.rpm
@@ -69,10 +69,10 @@ installbbr(){
 	
 	elif [[ "${release}" == "debian" || "${release}" == "ubuntu" ]]; then
 		if [[ ${bit} = "x86_64" ]]; then
-			kernel_version="5.10.11"
+			kernel_version="5.11.4"
 			detele_kernel_head
-			wget -N -O linux-headers-d10.deb https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/EThfkvMWaOhMu7fSrZeaHlABYBvl8u4sz5_RhJEeCTTZ2A?download=1
-			wget -N -O linux-image-d10.deb https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/EUzlBUMpYUpBqnNoQFSnfnYB9R_bisbIqEoG7RGpybnPsQ?download=1
+			wget -N -O linux-headers-d10.deb https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/Ecf2jKD5wSJDjuXn6r58bzIBV6ng3oaiOZYmSd3XQyr3vg?download=1
+			wget -N -O linux-image-d10.deb https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/EaYu3pW-bxJMrBvOuLya148B9U4ALTM77uU_Sdr6uFDHqg?download=1
 				
 			dpkg -i linux-image-d10.deb
 			dpkg -i linux-headers-d10.deb
@@ -133,10 +133,102 @@ installlot(){
 		yum remove -y kernel-headers
 		yum install -y http://${github}/lotserver/${release}/${version}/${bit}/kernel-headers-${kernel_version}.rpm
 		yum install -y http://${github}/lotserver/${release}/${version}/${bit}/kernel-devel-${kernel_version}.rpm
-	elif [[ "${release}" == "ubuntu" ]]; then
-		bash <(wget -qO- "https://${github}/Debian_Kernel.sh")
-	elif [[ "${release}" == "debian" ]]; then
-		bash <(wget -qO- "https://${github}/Debian_Kernel.sh")
+	fi
+	
+	if [[ "${release}" == "debian" || "${release}" == "ubuntu" ]]; then
+		deb_issue="$(cat /etc/issue)"
+		deb_relese="$(echo $deb_issue |grep -io 'Ubuntu\|Debian' |sed -r 's/(.*)/\L\1/')"
+		os_ver="$(dpkg --print-architecture)"
+		[ -n "$os_ver" ] || exit 1
+		if [ "$deb_relese" == 'ubuntu' ]; then
+			deb_ver="$(echo $deb_issue |grep -o '[0-9]*\.[0-9]*' |head -n1)"
+			if [ "$deb_ver" == "14.04" ]; then
+				kernel_version="3.16.0-77-generic" && item="3.16.0-77-generic" && ver='trusty'
+			elif [ "$deb_ver" == "16.04" ]; then
+				kernel_version="4.8.0-36-generic" && item="4.8.0-36-generic" && ver='xenial'
+			elif [ "$deb_ver" == "18.04" ]; then
+				kernel_version="4.15.0-30-generic" && item="4.15.0-30-generic" && ver='bionic'
+			else
+				exit 1
+			fi
+		url='archive.ubuntu.com'
+		urls='security.ubuntu.com'
+		elif [ "$deb_relese" == 'debian' ]; then
+			deb_ver="$(echo $deb_issue |grep -o '[0-9]*' |head -n1)"
+			if [ "$deb_ver" == "7" ]; then
+				kernel_version="3.2.0-4-${os_ver}" && item="3.2.0-4-${os_ver}" && ver='wheezy' && url='archive.debian.org' && urls='archive.debian.org'
+			elif [ "$deb_ver" == "8" ]; then
+				kernel_version="3.16.0-4-${os_ver}" && item="3.16.0-4-${os_ver}" && ver='jessie' && url='archive.debian.org' && urls='deb.debian.org'
+			elif [ "$deb_ver" == "9" ]; then
+				kernel_version="4.9.0-4-${os_ver}" && item="4.9.0-4-${os_ver}" && ver='stretch' && url='deb.debian.org' && urls='deb.debian.org'
+			else
+				exit 1
+			fi
+		fi	
+		[ -n "$item" ] && [ -n "$urls" ] && [ -n "$url" ] && [ -n "$ver" ] || exit 1
+		if [ "$deb_relese" == 'ubuntu' ]; then
+			echo "deb http://${url}/${deb_relese} ${ver} main restricted universe multiverse" >/etc/apt/sources.list
+			echo "deb http://${url}/${deb_relese} ${ver}-updates main restricted universe multiverse" >>/etc/apt/sources.list
+			echo "deb http://${url}/${deb_relese} ${ver}-backports main restricted universe multiverse" >>/etc/apt/sources.list
+			echo "deb http://${urls}/${deb_relese} ${ver}-security main restricted universe multiverse" >>/etc/apt/sources.list
+		
+			apt-get update
+			apt-get install --no-install-recommends -y linux-image-${item}
+		elif [ "$deb_relese" == 'debian' ]; then
+			echo "deb http://${url}/${deb_relese} ${ver} main" >/etc/apt/sources.list
+			echo "deb-src http://${url}/${deb_relese} ${ver} main" >>/etc/apt/sources.list
+			echo "deb http://${urls}/${deb_relese}-security ${ver}/updates main" >>/etc/apt/sources.list
+			echo "deb-src http://${urls}/${deb_relese}-security ${ver}/updates main" >>/etc/apt/sources.list
+
+			if [ "$deb_ver" == "8" ]; then
+				dpkg -l |grep -q 'linux-base' || {
+				wget --no-check-certificate -qO '/tmp/linux-base_3.5_all.deb' 'http://snapshot.debian.org/archive/debian/20120304T220938Z/pool/main/l/linux-base/linux-base_3.5_all.deb'
+				dpkg -i '/tmp/linux-base_3.5_all.deb'
+				} 
+				wget --no-check-certificate -qO '/tmp/linux-image-3.16.0-4-amd64_3.16.43-2+deb8u5_amd64.deb' 'http://snapshot.debian.org/archive/debian/20171008T163152Z/pool/main/l/linux/linux-image-3.16.0-4-amd64_3.16.43-2+deb8u5_amd64.deb'
+				dpkg -i '/tmp/linux-image-3.16.0-4-amd64_3.16.43-2+deb8u5_amd64.deb'
+	
+				if [ $? -ne 0 ]; then
+					exit 1
+				fi
+			elif [ "$deb_ver" == "9" ]; then
+				dpkg -l |grep -q 'linux-base' || {
+				wget --no-check-certificate -qO '/tmp/linux-base_4.5_all.deb' 'http://snapshot.debian.org/archive/debian/20160917T042239Z/pool/main/l/linux-base/linux-base_4.5_all.deb'
+				dpkg -i '/tmp/linux-base_4.5_all.deb'
+				} 
+				wget --no-check-certificate -qO '/tmp/linux-image-4.9.0-4-amd64_4.9.65-3+deb9u1_amd64.deb' 'http://snapshot.debian.org/archive/debian/20171224T175424Z/pool/main/l/linux/linux-image-4.9.0-4-amd64_4.9.65-3+deb9u1_amd64.deb'
+				dpkg -i '/tmp/linux-image-4.9.0-4-amd64_4.9.65-3+deb9u1_amd64.deb'
+				##备选
+				#https://sys.if.ci/download/linux-image-4.9.0-4-amd64_4.9.65-3+deb9u1_amd64.deb
+				#http://mirror.cs.uchicago.edu/debian-security/pool/updates/main/l/linux/linux-image-4.9.0-4-amd64_4.9.65-3+deb9u1_amd64.deb
+				#https://debian.sipwise.com/debian-security/pool/main/l/linux/linux-image-4.9.0-4-amd64_4.9.65-3+deb9u1_amd64.deb
+				#http://srv24.dsidata.sk/security.debian.org/pool/updates/main/l/linux/linux-image-4.9.0-4-amd64_4.9.65-3+deb9u1_amd64.deb
+				#https://pubmirror.plutex.de/debian-security/pool/updates/main/l/linux/linux-image-4.9.0-4-amd64_4.9.65-3+deb9u1_amd64.deb
+				#https://packages.mendix.com/debian/pool/main/l/linux/linux-image-4.9.0-4-amd64_4.9.65-3_amd64.deb
+				#http://snapshot.debian.org/archive/debian/20171224T175424Z/pool/main/l/linux/linux-image-4.9.0-4-amd64_4.9.65-3+deb9u1_amd64.deb
+				#http://snapshot.debian.org/archive/debian/20171231T180144Z/pool/main/l/linux/linux-image-4.9.0-4-amd64_4.9.65-3_amd64.deb
+				if [ $? -ne 0 ]; then
+					exit 1
+				fi
+			else
+				exit 1
+			fi
+		fi
+		# while true; do
+			# List_Kernel="$(dpkg -l |grep 'linux-image\|linux-modules\|linux-generic\|linux-headers' |grep -v "$item")"
+			# Num_Kernel="$(echo "$List_Kernel" |sed '/^$/d' |wc -l)"
+			# [ "$Num_Kernel" -eq "0" ] && break
+			# for kernel in `echo "$List_Kernel" |awk '{print $2}'`
+			# do
+				# if [ -f "/var/lib/dpkg/info/${kernel}.prerm" ]; then
+					# sed -i 's/linux-check-removal/#linux-check-removal/' "/var/lib/dpkg/info/${kernel}.prerm"
+					# sed -i 's/uname -r/echo purge/' "/var/lib/dpkg/info/${kernel}.prerm"
+				# fi
+				# dpkg --force-depends --purge "$kernel"
+			# done
+		# done
+		apt-get autoremove -y
+		[ -d '/var/lib/apt/lists' ] && find /var/lib/apt/lists -type f -delete
 	fi
 	
 	BBR_grub
@@ -152,10 +244,10 @@ installxanmod(){
 	if [[ "${release}" == "centos" ]]; then
 		if [[ ${version} = "7" ]]; then
 			if [[ ${bit} = "x86_64" ]]; then
-				kernel_version="5.10.11_xanmod"
+				kernel_version="5.11.4_xanmod"
 				detele_kernel_head
-				wget -N -O kernel-c7.rpm https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/Eb3HFR1uFnhEk0Y2Ro6PfGYBiyZPsYKwFuhTWQ8GoNwG7A?download=1
-				wget -N -O kernel-headers-c7.rpm https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/Eb5ZEyXUnM5Nj-AePu1b9RABgg0umDMTpe6prwNH3d9DBw?download=1
+				wget -N -O kernel-c7.rpm https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/EZX-L0X9BxlKkqhD5-CwJhYBr86Xp87WVNoTU6rRoKBLHA?download=1
+				wget -N -O kernel-headers-c7.rpm https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/EVx_iPuUUQVCoUuqcFLv5Z0B6wlxmMXcFfwCxOst3FjYBA?download=1
 				
 				yum install -y kernel-c7.rpm
 				yum install -y kernel-headers-c7.rpm			
@@ -183,18 +275,19 @@ installxanmod(){
 
 #安装bbr2内核 集成到xanmod内核了
 #安装bbrplus 新内核
+#2021.3.15 开始由https://github.com/UJX6N/bbrplus-5.10 替换bbrplusnew
 installbbrplusnew(){
-	kernel_version="4.14.182-bbrplus"
+	kernel_version="5.10.23-bbrplus"
 	bit=`uname -m`
 	rm -rf bbrplusnew
 	mkdir bbrplusnew && cd bbrplusnew
 	if [[ "${release}" == "centos" ]]; then
 		if [[ ${version} = "7" ]]; then
 			if [[ ${bit} = "x86_64" ]]; then
-				kernel_version="4.14.182_bbrplus"
+				#kernel_version="4.14.182_bbrplus"
 				detele_kernel_head
-				wget -N -O kernel-c7.rpm https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/EWtxHt1RiAlHgqERl5bvYzcBUrkKa_n1mWQ-uM2-Na7gmQ?download=1
-				wget -N -O kernel-headers-c7.rpm https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/EYkNoi17pKJBi7KnhUGRqEIBEK_26-bzkCL-fuQYZmrHWA?download=1
+				wget -N -O kernel-c7.rpm https://github.com/UJX6N/bbrplus-5.10/releases/download/5.10.23-bbrplus/CentOS-7_Required_kernel-bbrplus-5.10.23-1.bbrplus.el7.x86_64.rpm
+				wget -N -O kernel-headers-c7.rpm https://github.com/UJX6N/bbrplus-5.10/releases/download/5.10.23-bbrplus/CentOS-7_Optional_kernel-bbrplus-headers-5.10.23-1.bbrplus.el7.x86_64.rpm
 				
 				yum install -y kernel-c7.rpm
 				yum install -y kernel-headers-c7.rpm
@@ -204,10 +297,10 @@ installbbrplusnew(){
 		fi
 	elif [[ "${release}" == "debian" || "${release}" == "ubuntu" ]]; then
 		if [[ ${bit} = "x86_64" ]]; then
-			kernel_version="4.14.182-bbrplus"
+			#kernel_version="4.14.182-bbrplus"
 			detele_kernel_head
-			wget -N -O linux-headers-d10.deb https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/Ef9pJn1wp-pBk4FIPxT1qBoBqpWhTVCawoKzEB0_vpiMRw?download=1
-			wget -N -O linux-image-d10.deb https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/EaFJshr8za9Bq9FGjEBLds0B4ZfrYThLH8E35xe9-qWX_Q?download=1
+			wget -N -O linux-headers-d10.deb https://github.com/UJX6N/bbrplus-5.10/releases/download/5.10.23-bbrplus/Debian-Ubuntu_Required_linux-headers-5.10.23-bbrplus_5.10.23-bbrplus-1_amd64.deb
+			wget -N -O linux-image-d10.deb https://github.com/UJX6N/bbrplus-5.10/releases/download/5.10.23-bbrplus/Debian-Ubuntu_Required_linux-image-5.10.23-bbrplus_5.10.23-bbrplus-1_amd64.deb
 					
 			dpkg -i linux-image-d10.deb
 			dpkg -i linux-headers-d10.deb
@@ -230,10 +323,10 @@ installcloud(){
 	if [[ "${release}" == "centos" ]]; then
 		if [[ ${version} = "7" ]]; then
 			if [[ ${bit} = "x86_64" ]]; then
-				kernel_version="5.10.11_cloud"
+				kernel_version="5.11.4_cloud"
 				detele_kernel_head
-				wget -N -O kernel-c7.rpm https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/EQKgMxjTV5VIl1V3A-ORUEgBlWAh_dAz5Oe4MhDy1RMPvQ?download=1
-				wget -N -O kernel-headers-c7.rpm https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/EU5bdlYU-QBFnjbGlKQXQmUBKDK7ZqIoNwD9buCQTzT_mA?download=1
+				wget -N -O kernel-c7.rpm https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/Ef-1PZHkaD5JjGxlnMHMN-0Bk0nvLfSivaakljVWodCeXg?download=1
+				wget -N -O kernel-headers-c7.rpm https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/EenmjkQzXBpAlKejFJOJx0ABzCmOKp8uIOh1EmaEiCghfw?download=1
 				
 				yum install -y kernel-c7.rpm
 				yum install -y kernel-headers-c7.rpm
@@ -243,10 +336,10 @@ installcloud(){
 		fi
 	elif [[ "${release}" == "debian" || "${release}" == "ubuntu" ]]; then
 		if [[ ${bit} = "x86_64" ]]; then
-			kernel_version="5.10.11-cloud"
+			kernel_version="5.11.4-cloud"
 			detele_kernel_head
-			wget -N -O linux-headers-d10.deb https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/EfcMPzT_sDBOswKwgLCAO3QB6F1x3IEIgA8n-BxO_niqgQ?download=1
-			wget -N -O linux-image-d10.deb https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/EUL37RkbmTxGlqyiDIXi9RYB2UV_fwu8DJ4WMp0it0nVJQ?download=1
+			wget -N -O linux-headers-d10.deb https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/ESVJnvhr0uZFvXdCJde247cBqEybb9Z_7EhEi3XfZ_OgqA?download=1
+			wget -N -O linux-image-d10.deb https://chinagz2018-my.sharepoint.com/:u:/g/personal/ylx_chinagz2018_onmicrosoft_com/EWQtDVLuDytEieS4VUzW-m8BWS_2wvs9-7obg6_PpOMOpA?download=1
 					
 			dpkg -i linux-image-d10.deb
 			dpkg -i linux-headers-d10.deb
@@ -300,13 +393,13 @@ startbbrplus(){
 startlotserver(){
 	remove_bbr_lotserver
 	if [[ "${release}" == "centos" ]]; then
-		yum install ethtool
+		yum install ethtool -y
 	else
 		apt-get update
-		apt-get install ethtool
+		apt-get install ethtool -y
 	fi
 	#bash <(wget -qO- https://git.io/lotServerInstall.sh) install
-	bash <(wget --no-check-certificate -qO- https://github.com/xidcn/LotServer_Vicer/raw/master/Install.sh) install
+	echo | bash <(wget --no-check-certificate -qO- https://github.com/xidcn/LotServer_Vicer/raw/master/Install.sh) install
 	sed -i '/advinacc/d' /appex/etc/config
 	sed -i '/maxmode/d' /appex/etc/config
 	echo -e "advinacc=\"1\"
@@ -375,7 +468,7 @@ remove_bbr_lotserver(){
 	rm -rf bbrmod
 	
 	if [[ -e /appex/bin/lotServer.sh ]]; then
-		bash <(wget -qO- https://git.io/lotServerInstall.sh) uninstall
+		echo | bash <(wget -qO- https://git.io/lotServerInstall.sh) uninstall
 	fi
 	clear
 	# echo -e "${Info}:清除bbr/lotserver加速完成。"
@@ -386,6 +479,11 @@ remove_bbr_lotserver(){
 remove_all(){
 	sed -i '/#!!! Do not change these settings unless you know what you are doing !!!/d' /etc/sysctl.d/99-sysctl.conf
 	sed -i '/#############################/d' /etc/sysctl.d/99-sysctl.conf
+	sed -i '/kernel.pid_max/d' /etc/sysctl.d/99-sysctl.conf
+	sed -i '/vm.nr_hugepages/d' /etc/sysctl.d/99-sysctl.conf
+	sed -i '/net.core.optmem_max/d' /etc/sysctl.d/99-sysctl.conf
+	sed -i '/net.ipv4.conf.all.route_localnet/d' /etc/sysctl.d/99-sysctl.conf
+	sed -i '/net.ipv4.ip_forward/d' /etc/sysctl.d/99-sysctl.conf
 	sed -i '/net.ipv4.ip_forward/d' /etc/sysctl.d/99-sysctl.conf
 	sed -i '/net.ipv4.conf.all.forwarding/d' /etc/sysctl.d/99-sysctl.conf
 	sed -i '/net.ipv4.conf.default.forwarding/d' /etc/sysctl.d/99-sysctl.conf
@@ -663,6 +761,10 @@ sysctl -p
 
 optimizing_system_johnrosen1()
 {
+sed -i '/kernel.pid_max/d' /etc/sysctl.d/99-sysctl.conf
+sed -i '/vm.nr_hugepages/d' /etc/sysctl.d/99-sysctl.conf
+sed -i '/net.core.optmem_max/d' /etc/sysctl.d/99-sysctl.conf
+sed -i '/net.ipv4.conf.all.route_localnet/d' /etc/sysctl.d/99-sysctl.conf
 sed -i '/net.ipv4.ip_forward/d' /etc/sysctl.d/99-sysctl.conf
 sed -i '/net.ipv4.conf.all.forwarding/d' /etc/sysctl.d/99-sysctl.conf
 sed -i '/net.ipv4.conf.default.forwarding/d' /etc/sysctl.d/99-sysctl.conf
@@ -742,9 +844,10 @@ sed -i '/net.nf_conntrack_max/d' /etc/sysctl.d/99-sysctl.conf
 
 cat > '/etc/sysctl.d/99-sysctl.conf' << EOF
 #!!! Do not change these settings unless you know what you are doing !!!
-#net.ipv4.ip_forward = 1
-#net.ipv4.conf.all.forwarding = 1
-#net.ipv4.conf.default.forwarding = 1
+net.ipv4.conf.all.route_localnet=1
+net.ipv4.ip_forward = 1
+net.ipv4.conf.all.forwarding = 1
+net.ipv4.conf.default.forwarding = 1
 
 net.ipv6.conf.all.forwarding = 1
 net.ipv6.conf.default.forwarding = 1
@@ -765,6 +868,7 @@ net.core.rmem_max = 67108864
 net.core.wmem_max = 67108864
 net.core.rmem_default = 67108864
 net.core.wmem_default = 67108864
+net.core.optmem_max = 65536
 net.core.somaxconn = 10000
 
 net.ipv4.icmp_echo_ignore_all = 0
@@ -787,7 +891,7 @@ net.ipv4.tcp_rfc1337 = 0
 net.ipv4.tcp_timestamps = 1
 net.ipv4.tcp_tw_reuse = 1
 net.ipv4.tcp_fin_timeout = 15
-net.ipv4.ip_local_port_range = 10000 65000
+net.ipv4.ip_local_port_range = 1024 65535
 net.ipv4.tcp_max_tw_buckets = 2000000
 #net.ipv4.tcp_fastopen = 3
 net.ipv4.tcp_rmem = 4096 87380 67108864
@@ -817,12 +921,15 @@ net.ipv6.conf.default.accept_redirects = 0
 vm.swappiness = 1
 #net.ipv4.ip_unprivileged_port_start = 0
 vm.overcommit_memory = 1
+#vm.nr_hugepages=1280
+kernel.pid_max=64000
 net.ipv4.neigh.default.gc_thresh3=8192
 net.ipv4.neigh.default.gc_thresh2=4096
 net.ipv4.neigh.default.gc_thresh1=2048
 net.ipv6.neigh.default.gc_thresh3=8192
 net.ipv6.neigh.default.gc_thresh2=4096
 net.ipv6.neigh.default.gc_thresh1=2048
+net.ipv4.tcp_max_syn_backlog = 262144
 net.netfilter.nf_conntrack_max = 262144
 net.nf_conntrack_max = 262144
 EOF
@@ -842,8 +949,8 @@ cat > '/etc/systemd/system.conf' << EOF
 DefaultTimeoutStopSec=30s
 #DefaultRestartSec=100ms
 DefaultLimitCORE=infinity
-DefaultLimitNOFILE=51200
-DefaultLimitNPROC=51200
+DefaultLimitNOFILE=65535
+DefaultLimitNPROC=65535
 EOF
 
 sed -i '/soft nofile/d' /etc/security/limits.conf
@@ -851,10 +958,10 @@ sed -i '/hard nofile/d' /etc/security/limits.conf
 sed -i '/soft nproc/d' /etc/security/limits.conf
 sed -i '/hard nproc/d' /etc/security/limits.conf
 cat > '/etc/security/limits.conf' << EOF
-* soft nofile 51200
-* hard nofile 51200
-* soft nproc 51200
-* hard nproc 51200
+* soft nofile 65535
+* hard nofile 65535
+* soft nproc 65535
+* hard nproc 65535
 EOF
 if grep -q "ulimit" /etc/profile
 then
@@ -862,8 +969,8 @@ then
 else
 sed -i '/ulimit -SHn/d' /etc/profile
 sed -i '/ulimit -SHn/d' /etc/profile
-echo "ulimit -SHn 51200" >> /etc/profile
-echo "ulimit -SHu 51200" >> /etc/profile
+echo "ulimit -SHn 65535" >> /etc/profile
+echo "ulimit -SHu 65535" >> /etc/profile
 fi
 if grep -q "pam_limits.so" /etc/pam.d/common-session
 then
@@ -1580,9 +1687,12 @@ check_status(){
 	net_congestion_control=`cat /proc/sys/net/ipv4/tcp_congestion_control | awk '{print $1}'`
 	net_qdisc=`cat /proc/sys/net/core/default_qdisc | awk '{print $1}'`
 	kernel_version_r=`uname -r | awk '{print $1}'`
-	if [[ ${kernel_version_full} = "4.14.182-bbrplus" || ${kernel_version_full} = "4.14.168-bbrplus" || ${kernel_version_full} = "4.14.98-bbrplus" || ${kernel_version_full} = "4.14.129-bbrplus" || ${kernel_version_full} = "4.14.160-bbrplus" || ${kernel_version_full} = "4.14.166-bbrplus" || ${kernel_version_full} = "4.14.161-bbrplus" ]]; then
+	# if [[ ${kernel_version_full} = "4.14.182-bbrplus" || ${kernel_version_full} = "4.14.168-bbrplus" || ${kernel_version_full} = "4.14.98-bbrplus" || ${kernel_version_full} = "4.14.129-bbrplus" || ${kernel_version_full} = "4.14.160-bbrplus" || ${kernel_version_full} = "4.14.166-bbrplus" || ${kernel_version_full} = "4.14.161-bbrplus" ]]; then
+	if [[ ${kernel_version_full} == *bbrplus* ]]; then
 		kernel_status="BBRplus"
-	elif [[ ${kernel_version} = "3.10.0" || ${kernel_version} = "3.16.0" || ${kernel_version} = "3.2.0" || ${kernel_version} = "4.4.0" || ${kernel_version} = "3.13.0"  || ${kernel_version} = "2.6.32" || ${kernel_version} = "4.9.0" || ${kernel_version} = "4.11.2" ]]; then
+	# elif [[ ${kernel_version} = "3.10.0" || ${kernel_version} = "3.16.0" || ${kernel_version} = "3.2.0" || ${kernel_version} = "4.4.0" || ${kernel_version} = "3.13.0"  || ${kernel_version} = "2.6.32" || ${kernel_version} = "4.9.0" || ${kernel_version} = "4.11.2" || ${kernel_version} = "4.15.0" ]]; then
+		# kernel_status="Lotserver"	
+	elif [[ ${kernel_version_full} == *4.9.0-4* || ${kernel_version_full} == *4.15.0-30* || ${kernel_version_full} == *4.8.0-36* || ${kernel_version_full} == *3.16.0-77* || ${kernel_version_full} == *3.16.0-4* || ${kernel_version_full} == *3.2.0-4* || ${kernel_version_full} == *4.11.2-1* || ${kernel_version_full} == *2.6.32-504* || ${kernel_version_full} == *4.4.0-47* || ${kernel_version_full} == *3.13.0-29 || ${kernel_version_full} == *4.4.0-47* ]]; then
 		kernel_status="Lotserver"
 	elif [[ `echo ${kernel_version} | awk -F'.' '{print $1}'` == "4" ]] && [[ `echo ${kernel_version} | awk -F'.' '{print $2}'` -ge 9 ]] || [[ `echo ${kernel_version} | awk -F'.' '{print $1}'` == "5" ]]; then
 		kernel_status="BBR"
@@ -1645,6 +1755,8 @@ check_status(){
 			else 
 				run_status="BBRplus启动失败"
 			fi
+		elif [[ ${run_status} == "bbr" ]]; then
+				run_status="BBR启动成功"	
 		else 
 			run_status="未安装加速模块"
 		fi
